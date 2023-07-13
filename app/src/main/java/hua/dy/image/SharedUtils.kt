@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty
 private val sharedPreference = PreferenceManager.getDefaultSharedPreferences(appCtx)
 
 class SharedPreferenceEntrust<T>(
-    val key: String,
+    private val key: String,
     private val defaultValue: T
 ): ReadWriteProperty<Any?, T> {
 
@@ -48,8 +48,4 @@ class SharedPreferenceEntrust<T>(
         edit.apply()
     }
 
-}
-
-fun getPackageShared(packageName: String): SharedPreferenceEntrust<String> {
-    return SharedPreferenceEntrust(packageName, "")
 }
