@@ -7,11 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,8 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
@@ -77,6 +78,10 @@ fun Home() {
 
     val imageData = viewModel.allImages.collectAsLazyPagingItems()
     GetDyPermission()
+
+    val dialogState = remember {
+        mutableStateOf(Pair(false, ""))
+    }
     
     Scaffold(
         modifier = Modifier
@@ -108,14 +113,39 @@ fun Home() {
             items(imageData.itemCount) {
                 AsyncImage(
                     model = imageData[it]?.imagePath,
-                    contentDescription = null,
                     modifier = Modifier
-                        .padding(4.dp)
-                        .height(150.dp)
+                        .height(120.dp)
+                        .padding(8.dp)
+                        .clickable {
+                            dialogState.value = Pair(true, imageData[it]?.imagePath ?:"")
+                        },
+                    contentDescription = null
                 )
             }
+        }
+        if (dialogState.value.first) {
+            SharedDialog(dialogState = dialogState)
         }
 
     }
     
+}
+
+
+@Composable
+fun SharedDialog(
+    dialogState: MutableState<Pair<Boolean, String>>
+) {
+    Dialog(
+        onDismissRequest =  {}
+    ) {
+        Text(
+            text = dialogState.value.second,
+            modifier = Modifier
+                .clickable {
+                    dialogState.value = Pair(false, "")
+                },
+            fontSize = MaterialTheme.typography.bodyLarge.fontSize
+        )
+    }
 }

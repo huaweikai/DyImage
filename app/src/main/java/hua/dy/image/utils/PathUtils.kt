@@ -57,15 +57,13 @@ fun hasDyPermission(packageName: String): Boolean {
     return permissionUris.indexOf(packageName) != -1
 }
 
-val DyImagePath by lazy {
-    File(
-        appCtx.filesDir,
-        "dyImage"
-    ).apply {
-        if (!exists()) {
-            mkdirs()
-        }
+val DyImagePath: File by lazy {
+    val file = File(appCtx.externalCacheDir, "image_share")
+    val dyFile = File(file, "dy_image")
+    if (!dyFile.exists()) {
+        dyFile.mkdirs()
     }
+    dyFile
 }
 
 

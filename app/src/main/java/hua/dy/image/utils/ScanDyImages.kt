@@ -2,9 +2,12 @@ package hua.dy.image.utils
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.SharedPreferenceEntrust
 import hua.dy.image.bean.ImageBean
+import hua.dy.image.bean.type
 import hua.dy.image.db.dyImageDao
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -14,10 +17,11 @@ import kotlinx.coroutines.launch
 import splitties.init.appCtx
 import java.io.BufferedInputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 private val handlerException = CoroutineExceptionHandler { _, throwable ->
     Log.e("TAG", "异常 $throwable")
@@ -29,9 +33,17 @@ private val scope = CoroutineScope(job + handlerException)
 
 const val scopeCount = 4
 
+@Volatile
+private var scopeRunningCount = 0
+
 fun scanDyImages(
     packageName: String = DY_PACKAGE_NAME
 ) {
+    if (scopeRunningCount > 0) {
+        scope.launch(Dispatchers.Main) {
+            Toast.makeText(appCtx, "正在刷新", Toast.LENGTH_SHORT).show()
+        }
+    }
     val shared by SharedPreferenceEntrust(packageName, "")
     val documentDir = DocumentFile.fromTreeUri(appCtx, Uri.parse(shared)) ?: return
     if (!documentDir.exists() || !documentDir.isDirectory) return
@@ -53,8 +65,15 @@ private fun DocumentFile.saveFile(
     size: Int
 ) {
     scope.launch(Dispatchers.IO) {
+        scopeRunningCount++
         for (i in (index * size) until ((index + 1) * size)) {
             this@saveFile.listFiles()[i].saveImage()
+        }
+    }.invokeOnCompletion {
+        if (--scopeRunningCount == 0) {
+           scope.launch(Dispatchers.Main) {
+               Toast.makeText(appCtx, "刷新完成", Toast.LENGTH_SHORT).show()
+           }
         }
     }
 }
@@ -69,24 +88,28 @@ private suspend fun DocumentFile.saveImage() {
             }
         }
         isFile -> {
+            if (length() < fileSize) return
             val md5 = this.md5
             val isExit = dyImageDao.selectMd5Exist(md5) > 0
             if (isExit) return
-            val fileName = (name)?.replace(".cnt", "") ?: calendar.toString()
-            val fileNameWithType = "$fileName.$imageType"
-            var file = File(DyImagePath.absolutePath, fileNameWithType)
-            if (file.exists()) {
-                file = File(DyImagePath.absolutePath, fileName + "_" + calendar.timeInMillis + ".$imageType")
-            }
-            FileOutputStream(file).use { fos ->
+            val endType = imageType
+            val fileNameWithType = "${this.generalFileName()}.${endType ?: "png"}"
+            val newFile = FileProvider.getUriForFile(
+                appCtx,
+                "hua.dy.image.provider",
+                File(DyImagePath.absolutePath, fileNameWithType)
+            )
+            appCtx.contentResolver.openOutputStream(newFile)?.use { fos ->
                 appCtx.contentResolver.openInputStream(uri)?.use { ins ->
                     ins.copyTo(fos)
                 }
             }
             val imageBean = ImageBean(
                 md5 = md5,
-                imagePath = file.absolutePath,
-                fileTime = this.lastModified()
+                imagePath = newFile.toString(),
+                fileLength = this.length(),
+                fileTime = this.lastModified(),
+                fileType = endType.type
             )
             dyImageDao.insert(imageBean)
         }
@@ -116,6 +139,26 @@ val DocumentFile.imageType: String? get() {
     if (byteArray[6] == 'J'.code.toByte() && byteArray[7] == 'F'.code.toByte() && byteArray[8] == 'I'.code.toByte() && byteArray[9] == 'F'.code.toByte()) {
         return "jpg"
     }
+    Log.e("FileType", byteArray.map { it.toInt().toChar() }.joinToString("."))
     ins.close()
-    return "png"
+    return null
 }
+
+/**
+ * 以byte为单位
+ */
+val fileSize by SharedPreferenceEntrust("fileSize", 1024)
+
+
+fun DocumentFile.generalFileName(): String {
+//    val subNameResult = runCatching {
+//        this.name?.substring(0,5)
+//    }
+//    val subName = if (subNameResult.isFailure) {
+//        this.name
+//    } else subNameResult.getOrThrow()
+//    return "${subName}_${simpleDateFormat.format(lastModified())}"
+    return "${name?.replace(".cnt", "")}"
+}
+
+private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.CHINA)
