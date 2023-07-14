@@ -1,5 +1,5 @@
 [versions]
-agp = "8.2.0-alpha09"
+agp = "8.2.0-alpha12"
 kotlin = "1.8.10"
 core-ktx = "1.10.1"
 junit = "4.13.2"
@@ -15,6 +15,7 @@ coil = "2.4.0"
 nav-version = "2.6.0"
 paging-version = "3.2.0-rc01"
 shared-preference = "1.1.1"
+fast-md5 = "2.7.1"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -42,6 +43,7 @@ room-paging = { group = "androidx.room", name = "room-paging", version.ref = "ro
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 shared-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "shared-preference" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "nav-version" }
+fast-md5 = { group = "com.joyent.util", name = "fast-md5", version.ref = "fast-md5"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

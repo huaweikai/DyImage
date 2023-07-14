@@ -89,5 +89,6 @@ dependencies {
     implementation(libs.paging.runtime)
 
     implementation(libs.shared.preference)
+    implementation(libs.fast.md5)
 
 }

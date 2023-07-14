@@ -9,10 +9,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.SharedPreferenceEntrust
-import hua.dy.image.getPackageShared
 import splitties.init.appCtx
+import java.io.File
 
 const val ANDROID_SAF_PATH = "content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"
 
@@ -55,4 +55,29 @@ fun hasDyPermission(packageName: String): Boolean {
         it.uri.toString().split("data%2F", ignoreCase = true).last()
     }
     return permissionUris.indexOf(packageName) != -1
+}
+
+val DyImagePath by lazy {
+    File(
+        appCtx.filesDir,
+        "dyImage"
+    ).apply {
+        if (!exists()) {
+            mkdirs()
+        }
+    }
+}
+
+
+fun DocumentFile.findDocument(
+    path: String
+): DocumentFile? {
+    val pathList = path.split("/").filter { it.isNotBlank() }
+    var document = this
+    pathList.forEach {
+        document.findFile(it)?.let { file ->
+            document = file
+        } ?: return null
+    }
+    return document
 }
