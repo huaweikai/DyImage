@@ -19,6 +19,8 @@ val String?.type get() = when (this) {
     else -> Other
 }
 
+val ImageBean.isGif get() = fileType == GIF
+
 @Entity("dy_image")
 data class ImageBean(
     @PrimaryKey(autoGenerate = true)
@@ -31,5 +33,9 @@ data class ImageBean(
     @ColumnInfo(name = "file_time")
     val fileTime: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "file_type")
-    val fileType: Int = PNG
+    val fileType: Int = PNG,
+    @ColumnInfo(name = "file_name", defaultValue = "")
+    val fileName: String = "",
+    @ColumnInfo(name = "second_menu", defaultValue = "")
+    val secondMenu: String = ""
 )

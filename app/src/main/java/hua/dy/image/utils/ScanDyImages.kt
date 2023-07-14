@@ -5,7 +5,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
-import hua.dy.image.SharedPreferenceEntrust
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.type
 import hua.dy.image.db.dyImageDao
@@ -19,9 +18,6 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 private val handlerException = CoroutineExceptionHandler { _, throwable ->
     Log.e("TAG", "异常 $throwable")
@@ -71,14 +67,12 @@ private fun DocumentFile.saveFile(
         }
     }.invokeOnCompletion {
         if (--scopeRunningCount == 0) {
-           scope.launch(Dispatchers.Main) {
-               Toast.makeText(appCtx, "刷新完成", Toast.LENGTH_SHORT).show()
-           }
+            scope.launch(Dispatchers.Main) {
+                Toast.makeText(appCtx, "刷新完成", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
-
-private val calendar = Calendar.getInstance()
 
 private suspend fun DocumentFile.saveImage() {
     when {
@@ -87,6 +81,7 @@ private suspend fun DocumentFile.saveImage() {
                 document.saveImage()
             }
         }
+
         isFile -> {
             if (length() < fileSize) return
             val md5 = this.md5
@@ -109,7 +104,9 @@ private suspend fun DocumentFile.saveImage() {
                 imagePath = newFile.toString(),
                 fileLength = this.length(),
                 fileTime = this.lastModified(),
-                fileType = endType.type
+                fileType = endType.type,
+                fileName = fileNameWithType,
+                secondMenu = DY_IMAGE_SECOND_MENU
             )
             dyImageDao.insert(imageBean)
         }
@@ -126,23 +123,24 @@ private val DocumentFile.md5: String
         return BigInteger(1, md5.digest()).toString(16).padStart(32, '0')
     }
 
-val DocumentFile.imageType: String? get() {
-    val ins = appCtx.contentResolver.openInputStream(uri) ?: return null
-    val byteArray = ByteArray(10)
-    ins.read(byteArray)
-    if (byteArray[0] == 'G'.code.toByte() && byteArray[1] == 'I'.code.toByte() && byteArray[2] == 'F'.code.toByte()) {
-        return "gif"
+val DocumentFile.imageType: String?
+    get() {
+        val ins = appCtx.contentResolver.openInputStream(uri) ?: return null
+        val byteArray = ByteArray(10)
+        ins.read(byteArray)
+        if (byteArray[0] == 'G'.code.toByte() && byteArray[1] == 'I'.code.toByte() && byteArray[2] == 'F'.code.toByte()) {
+            return "gif"
+        }
+        if (byteArray[1] == 'P'.code.toByte() && byteArray[2] == 'N'.code.toByte() && byteArray[3] == 'G'.code.toByte()) {
+            return "png"
+        }
+        if (byteArray[6] == 'J'.code.toByte() && byteArray[7] == 'F'.code.toByte() && byteArray[8] == 'I'.code.toByte() && byteArray[9] == 'F'.code.toByte()) {
+            return "jpg"
+        }
+        Log.e("FileType", byteArray.map { it.toInt().toChar() }.joinToString("."))
+        ins.close()
+        return null
     }
-    if (byteArray[1] == 'P'.code.toByte() && byteArray[2] == 'N'.code.toByte() && byteArray[3] == 'G'.code.toByte()) {
-        return "png"
-    }
-    if (byteArray[6] == 'J'.code.toByte() && byteArray[7] == 'F'.code.toByte() && byteArray[8] == 'I'.code.toByte() && byteArray[9] == 'F'.code.toByte()) {
-        return "jpg"
-    }
-    Log.e("FileType", byteArray.map { it.toInt().toChar() }.joinToString("."))
-    ins.close()
-    return null
-}
 
 /**
  * 以byte为单位
@@ -161,4 +159,4 @@ fun DocumentFile.generalFileName(): String {
     return "${name?.replace(".cnt", "")}"
 }
 
-private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.CHINA)
+//private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.CHINA)

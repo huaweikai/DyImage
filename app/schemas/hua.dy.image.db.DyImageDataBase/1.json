@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d40f0f5a7f692ab5d6f4b9c6c56f84b7",
+    "identityHash": "c0f14b0b852b8e5fe2da65e48a30b26e",
     "entities": [
       {
         "tableName": "dy_image",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `md5` TEXT NOT NULL, `image_path` TEXT NOT NULL, `file_time` INTEGER NOT NULL, `file_type` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `md5` TEXT NOT NULL, `image_path` TEXT NOT NULL, `file_length` INTEGER NOT NULL DEFAULT 0, `file_time` INTEGER NOT NULL, `file_type` INTEGER NOT NULL, `file_name` TEXT NOT NULL DEFAULT '', `second_menu` TEXT NOT NULL DEFAULT '')",
         "fields": [
           {
             "fieldPath": "id",
@@ -27,6 +27,13 @@
             "notNull": true
           },
           {
+            "fieldPath": "fileLength",
+            "columnName": "file_length",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
             "fieldPath": "fileTime",
             "columnName": "file_time",
             "affinity": "INTEGER",
@@ -37,6 +44,20 @@
             "columnName": "file_type",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "file_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "secondMenu",
+            "columnName": "second_menu",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           }
         ],
         "primaryKey": {
@@ -52,7 +73,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd40f0f5a7f692ab5d6f4b9c6c56f84b7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c0f14b0b852b8e5fe2da65e48a30b26e')"
     ]
   }
 }

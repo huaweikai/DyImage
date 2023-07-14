@@ -10,7 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.documentfile.provider.DocumentFile
-import hua.dy.image.SharedPreferenceEntrust
 import splitties.init.appCtx
 import java.io.File
 
@@ -59,12 +58,14 @@ fun hasDyPermission(packageName: String): Boolean {
 
 val DyImagePath: File by lazy {
     val file = File(appCtx.externalCacheDir, "image_share")
-    val dyFile = File(file, "dy_image")
+    val dyFile = File(file, DY_IMAGE_SECOND_MENU)
     if (!dyFile.exists()) {
         dyFile.mkdirs()
     }
     dyFile
 }
+
+const val DY_IMAGE_SECOND_MENU = "dy_image"
 
 
 fun DocumentFile.findDocument(

@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.document.file.util)
     implementation(libs.splitties.appctx)
     implementation(libs.coil)
+    implementation(libs.coil.gif)
 
     // room
     kapt(libs.room.compiler)
@@ -89,6 +90,6 @@ dependencies {
     implementation(libs.paging.runtime)
 
     implementation(libs.shared.preference)
-    implementation(libs.fast.md5)
+    implementation(libs.system.ui.controll)
 
 }

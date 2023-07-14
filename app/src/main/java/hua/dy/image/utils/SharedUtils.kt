@@ -1,4 +1,4 @@
-package hua.dy.image
+package hua.dy.image.utils
 
 import androidx.preference.PreferenceManager
 import splitties.init.appCtx

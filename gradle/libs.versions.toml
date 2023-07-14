@@ -16,6 +16,7 @@ nav-version = "2.6.0"
 paging-version = "3.2.0-rc01"
 shared-preference = "1.1.1"
 fast-md5 = "2.7.1"
+accompanist = "0.31.5-beta"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -41,9 +42,11 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room-ktx
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room-ktx" }
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room-ktx"}
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }
 shared-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "shared-preference" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "nav-version" }
 fast-md5 = { group = "com.joyent.util", name = "fast-md5", version.ref = "fast-md5"}
+system-ui-controll = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

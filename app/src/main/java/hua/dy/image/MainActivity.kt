@@ -1,47 +1,57 @@
 package hua.dy.image
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.content.FileProvider
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import hua.dy.image.bean.ImageBean
+import hua.dy.image.ui.Home
+import hua.dy.image.ui.imageLoader
 import hua.dy.image.ui.theme.DyImageTheme
-import hua.dy.image.utils.GetDyPermission
-import hua.dy.image.viewmodel.DyImageViewModel
+import splitties.init.appCtx
+import java.io.File
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window,false)
         setContent {
+            val systemUiController = rememberSystemUiController()
+            systemUiController.setSystemBarsColor(
+                color = Color.Transparent,
+                darkIcons = !isSystemInDarkTheme()
+            )
             DyImageTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -70,82 +80,71 @@ fun NavGraphBuilder.route() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Home() {
-    
-    val viewModel = viewModel(DyImageViewModel::class.java)
-
-    val imageData = viewModel.allImages.collectAsLazyPagingItems()
-    GetDyPermission()
-
-    val dialogState = remember {
-        mutableStateOf(Pair(false, ""))
-    }
-    
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "抖音表情包")
-                },
-                actions = {
-                    Icon(
-                        imageVector = Icons.Outlined.Refresh,
-                        contentDescription = "刷新",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable {
-                                viewModel.refreshDyImages()
-                            }
-                    )
-                }
-            )
-        }
-    ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier
-                .padding(paddingValues)
-        ) {
-            items(imageData.itemCount) {
-                AsyncImage(
-                    model = imageData[it]?.imagePath,
-                    modifier = Modifier
-                        .height(120.dp)
-                        .padding(8.dp)
-                        .clickable {
-                            dialogState.value = Pair(true, imageData[it]?.imagePath ?:"")
-                        },
-                    contentDescription = null
-                )
-            }
-        }
-        if (dialogState.value.first) {
-            SharedDialog(dialogState = dialogState)
-        }
-
-    }
-    
-}
-
-
 @Composable
 fun SharedDialog(
-    dialogState: MutableState<Pair<Boolean, String>>
+    dialogState: MutableState<Pair<Boolean, ImageBean?>>
 ) {
-    Dialog(
-        onDismissRequest =  {}
-    ) {
-        Text(
-            text = dialogState.value.second,
-            modifier = Modifier
-                .clickable {
-                    dialogState.value = Pair(false, "")
-                },
-            fontSize = MaterialTheme.typography.bodyLarge.fontSize
-        )
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = {
+            dialogState.value = Pair(false, null)
+            Toast.makeText(appCtx, "取消分享", Toast.LENGTH_SHORT).show()
+        },
+        confirmButton = {
+            Text(
+                text = "分享到其他app",
+                modifier = Modifier
+                    .clickable {
+                        context.shareOtherApp(dialogState.value.second)
+                    }
+            )
+        },
+        title = {
+            Text(text = "分享表情包")
+        },
+        dismissButton = {
+            Text(
+                text = "取消",
+                modifier = Modifier.clickable {
+                    dialogState.value = Pair(false, null)
+                }
+            )
+        },
+        text = {
+            Log.e("TAg", "item ${dialogState.value.second}")
+            AsyncImage(
+                model = dialogState.value.second?.imagePath,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .background(Color.Transparent, shape = RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                imageLoader = dialogState.value.second.imageLoader,
+                contentDescription = null
+            )
+        }
+    )
+}
+
+fun Context.shareOtherApp(
+    imageBean: ImageBean?
+) {
+    if (imageBean == null) {
+        return
     }
+    val file = File(
+        appCtx.externalCacheDir,
+        "image_share"
+    )
+    val uri = FileProvider.getUriForFile(
+        appCtx, "hua.dy.image.provider", File(
+            file,
+            "${imageBean.secondMenu}/${imageBean.fileName}"
+        )
+    )
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.type = "image/*"
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.putExtra(Intent.EXTRA_STREAM, uri)
+    startActivity(Intent.createChooser(intent, "分享表情"))
 }
