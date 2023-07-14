@@ -21,6 +21,10 @@ val String?.type get() = when (this) {
 
 val ImageBean.isGif get() = fileType == GIF
 
+val ImageBean.isPng get() = fileType == PNG
+
+val ImageBean.isJpg get() = fileType == JPG
+
 @Entity("dy_image")
 data class ImageBean(
     @PrimaryKey(autoGenerate = true)

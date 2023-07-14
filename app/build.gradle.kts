@@ -14,7 +14,7 @@ android {
         minSdk = 24
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1"
 
         kapt {
             arguments {
@@ -30,7 +30,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources =  true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

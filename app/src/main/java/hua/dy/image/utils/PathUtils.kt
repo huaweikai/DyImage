@@ -67,6 +67,8 @@ val DyImagePath: File by lazy {
 
 const val DY_IMAGE_SECOND_MENU = "dy_image"
 
+const val SHARED_PROVIDER = "hua.dy.image.provider"
+
 
 fun DocumentFile.findDocument(
     path: String

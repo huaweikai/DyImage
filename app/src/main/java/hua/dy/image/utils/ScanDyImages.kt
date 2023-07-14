@@ -50,9 +50,15 @@ fun scanDyImages(
     val interval = fileSize.toFloat() / scopeCount
     val size = if (fileSize.toFloat() % scopeCount == 0f) {
         scopeCount
-    } else scopeCount + 1
+    } else {
+        if (interval < 0) 1 else scopeCount + 1
+    }
+    // 如果文件夹数量少时，就没必要启动那么多协程了
     repeat(size) { index ->
-        newPath.saveFile(index, interval.toInt())
+        newPath.saveFile(
+            index,
+            if (interval < 0) fileSize else interval.toInt()
+        )
     }
 }
 
@@ -91,7 +97,7 @@ private suspend fun DocumentFile.saveImage() {
             val fileNameWithType = "${this.generalFileName()}.${endType ?: "png"}"
             val newFile = FileProvider.getUriForFile(
                 appCtx,
-                "hua.dy.image.provider",
+                SHARED_PROVIDER,
                 File(DyImagePath.absolutePath, fileNameWithType)
             )
             appCtx.contentResolver.openOutputStream(newFile)?.use { fos ->

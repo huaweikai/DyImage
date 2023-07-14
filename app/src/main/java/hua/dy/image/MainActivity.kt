@@ -3,18 +3,15 @@ package hua.dy.image
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,8 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -33,13 +32,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.transform.RoundedCornersTransformation
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.ui.Home
 import hua.dy.image.ui.imageLoader
 import hua.dy.image.ui.theme.DyImageTheme
+import hua.dy.image.utils.SHARED_PROVIDER
+import hua.dy.image.utils.dp2Px
+import hua.dy.image.utils.screenHeight
+import hua.dy.image.utils.screenHeightPx
+import hua.dy.image.utils.screenWidth
+import hua.dy.image.utils.screenWidthPx
 import splitties.init.appCtx
 import java.io.File
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
 
@@ -86,6 +94,9 @@ fun SharedDialog(
 ) {
     val context = LocalContext.current
     AlertDialog(
+        modifier = Modifier
+            .height(screenHeight * 0.4f)
+            .width(screenWidth * 0.8f),
         onDismissRequest = {
             dialogState.value = Pair(false, null)
             Toast.makeText(appCtx, "取消分享", Toast.LENGTH_SHORT).show()
@@ -102,26 +113,35 @@ fun SharedDialog(
         title = {
             Text(text = "分享表情包")
         },
-        dismissButton = {
-            Text(
-                text = "取消",
-                modifier = Modifier.clickable {
-                    dialogState.value = Pair(false, null)
-                }
-            )
-        },
+//        dismissButton = {
+//            Text(
+//                text = "取消",
+//                modifier = Modifier.clickable {
+//                    dialogState.value = Pair(false, null)
+//                }
+//            )
+//        },
         text = {
-            Log.e("TAg", "item ${dialogState.value.second}")
-            AsyncImage(
-                model = dialogState.value.second?.imagePath,
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .background(Color.Transparent, shape = RoundedCornerShape(8.dp))
-                    .padding(8.dp),
-                imageLoader = dialogState.value.second.imageLoader,
-                contentDescription = null
-            )
+                    .fillMaxSize()
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(appCtx)
+                        .data(dialogState.value.second?.imagePath)
+                        .transformations(RoundedCornersTransformation(radius = 16.dp.value.dp2Px))
+                        .size(
+                            (screenWidthPx * 0.8f).roundToInt(),
+                            (screenHeightPx * 0.4f).roundToInt()
+                        )
+                        .build(),
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    imageLoader = dialogState.value.second.imageLoader,
+                    contentScale = ContentScale.Fit,
+                    contentDescription = null
+                )
+            }
         }
     )
 }
@@ -137,7 +157,7 @@ fun Context.shareOtherApp(
         "image_share"
     )
     val uri = FileProvider.getUriForFile(
-        appCtx, "hua.dy.image.provider", File(
+        appCtx, SHARED_PROVIDER, File(
             file,
             "${imageBean.secondMenu}/${imageBean.fileName}"
         )

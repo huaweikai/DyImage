@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
@@ -37,8 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -46,10 +45,15 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import coil.transform.RoundedCornersTransformation
 import hua.dy.image.SharedDialog
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.isGif
+import hua.dy.image.utils.DY_PACKAGE_NAME
 import hua.dy.image.utils.GetDyPermission
+import hua.dy.image.utils.dp2Px
+import hua.dy.image.utils.hasDyPermission
 import hua.dy.image.viewmodel.DyImageViewModel
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
@@ -61,7 +65,14 @@ fun Home() {
     val viewModel = viewModel(DyImageViewModel::class.java)
 
     val imageData = viewModel.allImages.collectAsLazyPagingItems()
-    GetDyPermission()
+
+    var permissionState by remember {
+        mutableStateOf(hasDyPermission(DY_PACKAGE_NAME))
+    }
+
+    if (!permissionState) {
+        GetDyPermission()
+    }
 
     val dialogState = remember {
         mutableStateOf(Pair<Boolean, ImageBean?>(false, null))
@@ -99,7 +110,11 @@ fun Home() {
                         modifier = Modifier
                             .padding(end = 16.dp)
                             .clickable {
-                                viewModel.refreshDyImages()
+                                val permission = hasDyPermission(DY_PACKAGE_NAME)
+                                permissionState = permission
+                                if (permission) {
+                                    viewModel.refreshDyImages()
+                                }
                             }
                     )
                 }
@@ -156,7 +171,7 @@ fun Home() {
         }
     ) { paddingValues ->
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(4),
             modifier = Modifier
                 .padding(paddingValues),
             contentPadding = PaddingValues(
@@ -167,11 +182,13 @@ fun Home() {
             items(imageData.itemCount) { index ->
                 val item = imageData[index]
                 AsyncImage(
-                    model = item?.imagePath,
+                    model = ImageRequest.Builder(appCtx)
+                        .transformations(RoundedCornersTransformation(radius = 16.dp.value.dp2Px))
+                        .data(item?.imagePath)
+                        .build(),
                     imageLoader = item?.imageLoader ?: globalImageLoader,
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .background(Color.Transparent, shape = RoundedCornerShape(8.dp))
                         .padding(8.dp)
                         .pointerInput(index) {
                             detectTapGestures(
@@ -180,6 +197,7 @@ fun Home() {
                                 }
                             )
                         },
+                    contentScale = ContentScale.Crop,
                     contentDescription = null
                 )
             }
