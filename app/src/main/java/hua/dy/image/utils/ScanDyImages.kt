@@ -94,9 +94,6 @@ private suspend fun DocumentFile.saveImage(
         isFile -> {
             if (length() < fileSize) return
             val md5 = this.md5
-            Log.e("TAG", "MIME ${this.type}")
-            val isExit = dyImageDao.selectMd5Exist(md5) > 0
-            if (isExit) return
             val endType = imageType
             val fileNameWithType = "${this.generalFileName()}.${endType ?: "png"}"
             val newFile = FileProvider.getUriForFile(

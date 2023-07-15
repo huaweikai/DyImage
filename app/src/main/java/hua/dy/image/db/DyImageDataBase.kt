@@ -9,7 +9,7 @@ import splitties.init.appCtx
 
 @Database(
     entities = [ImageBean::class],
-    version = 1,
+    version = 2,
 )
 abstract class DyImageDataBase: RoomDatabase() {
 

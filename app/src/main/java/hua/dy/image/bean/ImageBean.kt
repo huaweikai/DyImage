@@ -27,8 +27,7 @@ val ImageBean.isJpg get() = fileType == JPG
 
 @Entity("dy_image")
 data class ImageBean(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey
     val md5: String = "-1",
     @ColumnInfo(name = "image_path")
     val imagePath: String = "",
