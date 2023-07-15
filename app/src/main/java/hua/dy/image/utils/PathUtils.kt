@@ -62,9 +62,9 @@ private val pattern = "^[*]+\$".toPattern()
  * 如果文件路径有全星的，有几个星就拿第几个
  */
 fun DocumentFile.findDocument(
-    appBean: AppBean
+    cachePath: String
 ): DocumentFile? {
-    val pathList = appBean.cachePath.split("/").filter { it.isNotBlank() }
+    val pathList = cachePath.split("/").filter { it.isNotBlank() }
     var document: DocumentFile? = this
     pathList.forEach {
         if (document == null) return null

@@ -11,5 +11,8 @@ const val DY_CACHE_PATH = "/cache/picture/fresco_cache/*"
 object DyAppBean: AppBean(
     packageName = DY_PACKAGE_NAME,
     providerSecond = DY_IMAGE_SECOND_MENU,
-    cachePath = DY_CACHE_PATH
+    cachePath = listOf(
+        DY_CACHE_PATH,
+        "/cache/picture/im_fresco_cache/*"
+    )
 )

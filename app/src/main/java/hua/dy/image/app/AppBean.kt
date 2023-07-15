@@ -14,7 +14,7 @@ import java.io.File
 sealed class AppBean(
     val packageName: String,
     val providerSecond: String,
-    val cachePath: String
+    val cachePath: List<String>
 ) {
 
     val safPath: String

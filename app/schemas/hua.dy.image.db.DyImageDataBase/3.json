@@ -1,0 +1,87 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "2e8a0a84e702a170c5313cc2fb37807f",
+    "entities": [
+      {
+        "tableName": "dy_image",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`md5` TEXT NOT NULL, `image_path` TEXT NOT NULL, `file_length` INTEGER NOT NULL DEFAULT 0, `file_time` INTEGER NOT NULL, `file_type` INTEGER NOT NULL, `file_name` TEXT NOT NULL DEFAULT '', `second_menu` TEXT NOT NULL DEFAULT '', `scan_time` INTEGER NOT NULL DEFAULT 0, `cache_path` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`md5`))",
+        "fields": [
+          {
+            "fieldPath": "md5",
+            "columnName": "md5",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imagePath",
+            "columnName": "image_path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileLength",
+            "columnName": "file_length",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "fileTime",
+            "columnName": "file_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileType",
+            "columnName": "file_type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "file_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "secondMenu",
+            "columnName": "second_menu",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "scanTime",
+            "columnName": "scan_time",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "cachePath",
+            "columnName": "cache_path",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "md5"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e8a0a84e702a170c5313cc2fb37807f')"
+    ]
+  }
+}

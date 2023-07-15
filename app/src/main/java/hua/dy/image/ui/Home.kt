@@ -19,18 +19,22 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -103,6 +107,8 @@ fun Home() {
     val lazyScrollState = rememberLazyGridState()
 
     val scope = rememberCoroutineScope()
+
+    val chatMainState = viewModel.chatImageStateFlow.collectAsState()
 
     Scaffold(
         modifier = Modifier
@@ -207,6 +213,27 @@ fun Home() {
                         tint = MaterialTheme.colorScheme.surfaceTint
                     )
                 }
+                IconToggleButton(
+                    checked = chatMainState.value,
+                    onCheckedChange = {
+                        viewModel.changeChatImageState(it)
+                        imageData.refresh()
+                    },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .width(48.dp)
+                        .height(48.dp)
+                        .background(
+                            MaterialTheme.colorScheme.background,
+                            shape = CircleShape
+                        ),
+                ) {
+                    Icon(
+                        imageVector = if (chatMainState.value) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.surfaceTint
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -256,7 +283,7 @@ fun Home() {
             sortImageState,
             onclick = {
                 sortValue = it
-                viewModel.refreshImage()
+                imageData.refresh()
             }
         )
     }

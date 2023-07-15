@@ -45,9 +45,12 @@ fun scanDyImages(
     val shared by SharedPreferenceEntrust(appBean.packageName, "")
     val documentDir = DocumentFile.fromTreeUri(appCtx, Uri.parse(shared)) ?: return
     if (!documentDir.exists() || !documentDir.isDirectory) return
-    val targetFile = documentDir.findDocument(appBean) ?: return
-    if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return
-    targetFile.saveFile(appBean)
+    repeat(appBean.cachePath.size) { index ->
+        val path = appBean.cachePath[index]
+        val targetFile = documentDir.findDocument(path) ?: return
+        if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return
+        targetFile.saveFile(index, appBean)
+    }
 }
 
 private fun DocumentFile.getRealScopeCount(): Pair<Int, Int> {
@@ -62,6 +65,7 @@ private fun DocumentFile.getRealScopeCount(): Pair<Int, Int> {
     }
 
 private fun DocumentFile.saveFile(
+    cacheIndex: Int,
     appBean: AppBean
 ) {
     val (realScopeCount, interval) = getRealScopeCount()
@@ -69,7 +73,7 @@ private fun DocumentFile.saveFile(
         scope.launch(Dispatchers.IO) {
             scopeRunningCount++
             for (i in (index * interval) until ((index + 1) * interval)) {
-                this@saveFile.listFiles()[i].saveImage(appBean)
+                this@saveFile.listFiles()[i].saveImage(cacheIndex, appBean)
             }
         }.invokeOnCompletion {
             if (--scopeRunningCount == 0) {
@@ -82,12 +86,13 @@ private fun DocumentFile.saveFile(
 }
 
 private suspend fun DocumentFile.saveImage(
+    cacheIndex: Int,
     appBean: AppBean = DyAppBean
 ) {
     when {
         isDirectory -> {
             listFiles().forEach { document ->
-                document.saveImage()
+                document.saveImage(cacheIndex)
             }
         }
 
@@ -114,7 +119,8 @@ private suspend fun DocumentFile.saveImage(
                 fileType = endType.type,
                 fileName = fileNameWithType,
                 secondMenu = appBean.providerSecond,
-                scanTime = System.currentTimeMillis()
+                scanTime = System.currentTimeMillis(),
+                cachePath = appBean.cachePath.getOrNull(cacheIndex) ?:""
             )
             dyImageDao.insert(imageBean)
         }
@@ -153,7 +159,7 @@ val DocumentFile.imageType: String?
 /**
  * 以byte为单位
  */
-val fileSize by SharedPreferenceEntrust("fileSize", 1024)
+val fileSize by SharedPreferenceEntrust("fileSize", 0)
 
 
 fun DocumentFile.generalFileName(): String {

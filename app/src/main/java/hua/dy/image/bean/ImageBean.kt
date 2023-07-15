@@ -42,5 +42,7 @@ data class ImageBean(
     @ColumnInfo(name = "second_menu", defaultValue = "")
     val secondMenu: String = "",
     @ColumnInfo(name = "scan_time", defaultValue = "0")
-    val scanTime: Long = 0
+    val scanTime: Long = 0,
+    @ColumnInfo(name = "cache_path", defaultValue = "")
+    val cachePath: String = ""
 )
