@@ -10,30 +10,24 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.documentfile.provider.DocumentFile
+import hua.dy.image.app.AppBean
+import hua.dy.image.app.DyAppBean
 import splitties.init.appCtx
-import java.io.File
 
 const val ANDROID_SAF_PATH = "content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"
 
-
-/**
- * 抖音包名
- */
-const val DY_PACKAGE_NAME = "com.ss.android.ugc.aweme"
-
-/**
- * 抖音SAF路径
- */
-const val DY_SAF_PATH = "${ANDROID_SAF_PATH}$DY_PACKAGE_NAME"
-
 @Composable
 fun GetDyPermission(
-    packageName: String = DY_PACKAGE_NAME
+    appBean: AppBean = DyAppBean
 ) {
-    var packShared by SharedPreferenceEntrust(packageName, "")
+    var packShared by SharedPreferenceEntrust(appBean.packageName, "")
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri == null) {
             Toast.makeText(appCtx, "Permission denied", Toast.LENGTH_SHORT).show()
+            return@rememberLauncherForActivityResult
+        }
+        if (!appBean.isPermissionUri(uri)) {
+            Toast.makeText(appCtx, "权限目录出错", Toast.LENGTH_SHORT).show()
             return@rememberLauncherForActivityResult
         }
         val modeFlags =
@@ -43,8 +37,8 @@ fun GetDyPermission(
     }
     LaunchedEffect(Unit) {
 
-        if (packShared.isBlank() || !hasDyPermission(packageName)) {
-            launcher.launch(Uri.parse(DY_SAF_PATH))
+        if (packShared.isBlank() || !hasDyPermission(appBean.packageName)) {
+            launcher.launch(Uri.parse(appBean.safPath))
         }
     }
 }
@@ -56,29 +50,33 @@ fun hasDyPermission(packageName: String): Boolean {
     return permissionUris.indexOf(packageName) != -1
 }
 
-val DyImagePath: File by lazy {
-    val file = File(appCtx.externalCacheDir, "image_share")
-    val dyFile = File(file, DY_IMAGE_SECOND_MENU)
-    if (!dyFile.exists()) {
-        dyFile.mkdirs()
-    }
-    dyFile
-}
-
-const val DY_IMAGE_SECOND_MENU = "dy_image"
 
 const val SHARED_PROVIDER = "hua.dy.image.provider"
 
+const val APP_SHARED_PROVIDER_TOP_PATH = "image_share"
 
+
+private val pattern = "^[*]+\$".toPattern()
+
+/**
+ * 如果文件路径有全星的，有几个星就拿第几个
+ */
 fun DocumentFile.findDocument(
-    path: String
+    appBean: AppBean
 ): DocumentFile? {
-    val pathList = path.split("/").filter { it.isNotBlank() }
-    var document = this
+    val pathList = appBean.cachePath.split("/").filter { it.isNotBlank() }
+    var document: DocumentFile? = this
     pathList.forEach {
-        document.findFile(it)?.let { file ->
-            document = file
-        } ?: return null
+        if (document == null) return null
+        val ma = pattern.matcher(it)
+        if (ma.find()) {
+            val index = ma.group().length - 1
+            document = document?.listFiles()?.getOrNull(index)
+        } else {
+            document?.findFile(it)?.let { file ->
+                document = file
+            } ?: return null
+        }
     }
     return document
 }

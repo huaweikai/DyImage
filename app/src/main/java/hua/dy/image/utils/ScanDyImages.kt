@@ -5,6 +5,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import hua.dy.image.app.AppBean
+import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.type
 import hua.dy.image.db.dyImageDao
@@ -33,54 +35,55 @@ const val scopeCount = 4
 private var scopeRunningCount = 0
 
 fun scanDyImages(
-    packageName: String = DY_PACKAGE_NAME
+    appBean: AppBean = DyAppBean
 ) {
     if (scopeRunningCount > 0) {
         scope.launch(Dispatchers.Main) {
             Toast.makeText(appCtx, "正在刷新", Toast.LENGTH_SHORT).show()
         }
     }
-    val shared by SharedPreferenceEntrust(packageName, "")
+    val shared by SharedPreferenceEntrust(appBean.packageName, "")
     val documentDir = DocumentFile.fromTreeUri(appCtx, Uri.parse(shared)) ?: return
     if (!documentDir.exists() || !documentDir.isDirectory) return
-    val frescoCache = documentDir.findDocument("/cache/picture/fresco_cache") ?: return
-    val newPath = frescoCache.listFiles().getOrNull(0) ?: return
-    val fileSize = newPath.listFiles().size
-    if (fileSize == 0) return
-    val interval = fileSize.toFloat() / scopeCount
-    val size = if (fileSize.toFloat() % scopeCount == 0f) {
-        scopeCount
-    } else {
-        if (interval < 0) 1 else scopeCount + 1
-    }
-    // 如果文件夹数量少时，就没必要启动那么多协程了
-    repeat(size) { index ->
-        newPath.saveFile(
-            index,
-            if (interval < 0) fileSize else interval.toInt()
-        )
-    }
+    val targetFile = documentDir.findDocument(appBean) ?: return
+    if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return
+    targetFile.saveFile(appBean)
 }
 
-private fun DocumentFile.saveFile(
-    index: Int,
-    size: Int
-) {
-    scope.launch(Dispatchers.IO) {
-        scopeRunningCount++
-        for (i in (index * size) until ((index + 1) * size)) {
-            this@saveFile.listFiles()[i].saveImage()
+private fun DocumentFile.getRealScopeCount(): Pair<Int, Int> {
+        val fileSum = listFiles().size
+        val interval = fileSum.toFloat() / scopeCount
+        val scopeCount =  if (fileSize.toFloat() % scopeCount == 0f) {
+            scopeCount
+        } else {
+            if (interval < 1 && interval > 0) 1 else if (interval <= 0) 0 else scopeCount + 1
         }
-    }.invokeOnCompletion {
-        if (--scopeRunningCount == 0) {
-            scope.launch(Dispatchers.Main) {
-                Toast.makeText(appCtx, "刷新完成", Toast.LENGTH_SHORT).show()
+        return Pair(scopeCount, if (interval < 1) fileSum else interval.toInt())
+    }
+
+private fun DocumentFile.saveFile(
+    appBean: AppBean
+) {
+    val (realScopeCount, interval) = getRealScopeCount()
+    repeat(realScopeCount) { index ->
+        scope.launch(Dispatchers.IO) {
+            scopeRunningCount++
+            for (i in (index * interval) until ((index + 1) * interval)) {
+                this@saveFile.listFiles()[i].saveImage(appBean)
+            }
+        }.invokeOnCompletion {
+            if (--scopeRunningCount == 0) {
+                scope.launch(Dispatchers.Main) {
+                    Toast.makeText(appCtx, "刷新完成", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 }
 
-private suspend fun DocumentFile.saveImage() {
+private suspend fun DocumentFile.saveImage(
+    appBean: AppBean = DyAppBean
+) {
     when {
         isDirectory -> {
             listFiles().forEach { document ->
@@ -91,6 +94,7 @@ private suspend fun DocumentFile.saveImage() {
         isFile -> {
             if (length() < fileSize) return
             val md5 = this.md5
+            Log.e("TAG", "MIME ${this.type}")
             val isExit = dyImageDao.selectMd5Exist(md5) > 0
             if (isExit) return
             val endType = imageType
@@ -98,7 +102,7 @@ private suspend fun DocumentFile.saveImage() {
             val newFile = FileProvider.getUriForFile(
                 appCtx,
                 SHARED_PROVIDER,
-                File(DyImagePath.absolutePath, fileNameWithType)
+                File(appBean.saveImagePath, fileNameWithType)
             )
             appCtx.contentResolver.openOutputStream(newFile)?.use { fos ->
                 appCtx.contentResolver.openInputStream(uri)?.use { ins ->
@@ -112,7 +116,8 @@ private suspend fun DocumentFile.saveImage() {
                 fileTime = this.lastModified(),
                 fileType = endType.type,
                 fileName = fileNameWithType,
-                secondMenu = DY_IMAGE_SECOND_MENU
+                secondMenu = appBean.providerSecond,
+                scanTime = System.currentTimeMillis()
             )
             dyImageDao.insert(imageBean)
         }

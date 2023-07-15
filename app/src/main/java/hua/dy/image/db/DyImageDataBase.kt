@@ -19,6 +19,7 @@ abstract class DyImageDataBase: RoomDatabase() {
 
 val dyImageDb: DyImageDataBase by lazy {
     Room.databaseBuilder(appCtx, DyImageDataBase::class.java, "dy_image.db")
+        .fallbackToDestructiveMigration()
         .build()
 }
 

@@ -14,8 +14,14 @@ interface DyImageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(imageBean: ImageBean)
 
-    @Query("SELECT * FROM dy_image ORDER BY file_time COLLATE NOCASE ASC")
-    fun getImageList(): PagingSource<Int, ImageBean>
+    @Query("SELECT * FROM dy_image ORDER BY file_time COLLATE NOCASE DESC")
+    fun getImageListByFileTime(): PagingSource<Int, ImageBean>
+
+    @Query("SELECT * FROM dy_image ORDER BY file_length COLLATE NOCASE DESC")
+    fun getImageListByFileLength(): PagingSource<Int, ImageBean>
+
+    @Query("SELECT * FROM dy_image ORDER BY scan_time COLLATE NOCASE DESC")
+    fun getImageListByScanTime(): PagingSource<Int, ImageBean>
 
     @Query("DELETE FROM dy_image where id = :id")
     suspend fun deleteImage(id: Int): Int

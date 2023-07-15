@@ -36,6 +36,7 @@ import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import hua.dy.image.bean.ImageBean
+import hua.dy.image.bean.isGif
 import hua.dy.image.ui.Home
 import hua.dy.image.ui.imageLoader
 import hua.dy.image.ui.theme.DyImageTheme
@@ -129,11 +130,14 @@ fun SharedDialog(
                 AsyncImage(
                     model = ImageRequest.Builder(appCtx)
                         .data(dialogState.value.second?.imagePath)
-                        .transformations(RoundedCornersTransformation(radius = 16.dp.value.dp2Px))
                         .size(
                             (screenWidthPx * 0.8f).roundToInt(),
                             (screenHeightPx * 0.4f).roundToInt()
                         )
+                        .apply {
+                            if (dialogState.value.second?.isGif == false)
+                                transformations(RoundedCornersTransformation(16.dp.value.dp2Px))
+                        }
                         .build(),
                     modifier = Modifier
                         .align(Alignment.Center),

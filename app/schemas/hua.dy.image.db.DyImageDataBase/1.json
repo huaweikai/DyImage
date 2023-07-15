@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c0f14b0b852b8e5fe2da65e48a30b26e",
+    "identityHash": "254106561628b54084cf8e86726b41f1",
     "entities": [
       {
         "tableName": "dy_image",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `md5` TEXT NOT NULL, `image_path` TEXT NOT NULL, `file_length` INTEGER NOT NULL DEFAULT 0, `file_time` INTEGER NOT NULL, `file_type` INTEGER NOT NULL, `file_name` TEXT NOT NULL DEFAULT '', `second_menu` TEXT NOT NULL DEFAULT '')",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `md5` TEXT NOT NULL, `image_path` TEXT NOT NULL, `file_length` INTEGER NOT NULL DEFAULT 0, `file_time` INTEGER NOT NULL, `file_type` INTEGER NOT NULL, `file_name` TEXT NOT NULL DEFAULT '', `second_menu` TEXT NOT NULL DEFAULT '', `scan_time` INTEGER NOT NULL DEFAULT 0)",
         "fields": [
           {
             "fieldPath": "id",
@@ -58,6 +58,13 @@
             "affinity": "TEXT",
             "notNull": true,
             "defaultValue": "''"
+          },
+          {
+            "fieldPath": "scanTime",
+            "columnName": "scan_time",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -73,7 +80,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c0f14b0b852b8e5fe2da65e48a30b26e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '254106561628b54084cf8e86726b41f1')"
     ]
   }
 }

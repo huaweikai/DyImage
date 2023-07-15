@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,12 +50,15 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
 import hua.dy.image.SharedDialog
+import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.isGif
-import hua.dy.image.utils.DY_PACKAGE_NAME
 import hua.dy.image.utils.GetDyPermission
+import hua.dy.image.utils.SortBottomDialog
 import hua.dy.image.utils.dp2Px
 import hua.dy.image.utils.hasDyPermission
+import hua.dy.image.utils.screenHeightPx
+import hua.dy.image.utils.sortValue
 import hua.dy.image.viewmodel.DyImageViewModel
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
@@ -62,12 +67,16 @@ import splitties.init.appCtx
 @Composable
 fun Home() {
 
+    val sortImageState = remember {
+        mutableStateOf(Pair(false, -1))
+    }
+
     val viewModel = viewModel(DyImageViewModel::class.java)
 
     val imageData = viewModel.allImages.collectAsLazyPagingItems()
 
     var permissionState by remember {
-        mutableStateOf(hasDyPermission(DY_PACKAGE_NAME))
+        mutableStateOf(hasDyPermission(DyAppBean.packageName))
     }
 
     if (!permissionState) {
@@ -110,11 +119,20 @@ fun Home() {
                         modifier = Modifier
                             .padding(end = 16.dp)
                             .clickable {
-                                val permission = hasDyPermission(DY_PACKAGE_NAME)
+                                val permission = hasDyPermission(DyAppBean.packageName)
                                 permissionState = permission
                                 if (permission) {
                                     viewModel.refreshDyImages()
                                 }
+                            }
+                    )
+                    Icon(
+                        imageVector = Icons.Outlined.Menu,
+                        contentDescription = "排序",
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .clickable {
+                                sortImageState.value = Pair(true, sortValue)
                             }
                     )
                 }
@@ -139,10 +157,21 @@ fun Home() {
                                 MaterialTheme.colorScheme.background,
                                 shape = CircleShape
                             )
-                            .clickable {
-                                scope.launch {
-                                    lazyScrollState.scrollToItem(0)
-                                }
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onDoubleTap = {
+                                        scope.launch {
+                                            lazyScrollState.scrollToItem(0)
+                                        }
+                                    },
+                                    onTap = {
+                                        scope.launch {
+                                            lazyScrollState.animateScrollBy(
+                                                -screenHeightPx * 0.8f
+                                            )
+                                        }
+                                    }
+                                )
                             },
                         tint = MaterialTheme.colorScheme.surfaceTint
                     )
@@ -159,10 +188,21 @@ fun Home() {
                                 MaterialTheme.colorScheme.background,
                                 shape = CircleShape
                             )
-                            .clickable {
-                                scope.launch {
-                                    lazyScrollState.scrollToItem(imageData.itemCount - 1)
-                                }
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onDoubleTap = {
+                                        scope.launch {
+                                            lazyScrollState.scrollToItem(imageData.itemCount - 1)
+                                        }
+                                    },
+                                    onTap = {
+                                        scope.launch {
+                                            lazyScrollState.animateScrollBy(
+                                                screenHeightPx * 0.8f
+                                            )
+                                        }
+                                    }
+                                )
                             },
                         tint = MaterialTheme.colorScheme.surfaceTint
                     )
@@ -171,7 +211,7 @@ fun Home() {
         }
     ) { paddingValues ->
         LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(3),
             modifier = Modifier
                 .padding(paddingValues),
             contentPadding = PaddingValues(
@@ -183,13 +223,16 @@ fun Home() {
                 val item = imageData[index]
                 AsyncImage(
                     model = ImageRequest.Builder(appCtx)
-                        .transformations(RoundedCornersTransformation(radius = 16.dp.value.dp2Px))
                         .data(item?.imagePath)
+                        .apply {
+                            if (item?.isGif == false)
+                                transformations(RoundedCornersTransformation(16.dp.value.dp2Px))
+                        }
                         .build(),
                     imageLoader = item?.imageLoader ?: globalImageLoader,
                     modifier = Modifier
-                        .aspectRatio(1f)
                         .padding(8.dp)
+                        .aspectRatio(1f)
                         .pointerInput(index) {
                             detectTapGestures(
                                 onLongPress = {
@@ -206,6 +249,16 @@ fun Home() {
             SharedDialog(dialogState = dialogState)
         }
 
+    }
+
+    AnimatedVisibility(visible = sortImageState.value.first) {
+        SortBottomDialog(
+            sortImageState,
+            onclick = {
+                sortValue = it
+                viewModel.refreshImage()
+            }
+        )
     }
 
 }
