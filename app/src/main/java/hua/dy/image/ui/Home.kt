@@ -233,7 +233,7 @@ fun Home() {
                     modifier = Modifier
                         .padding(8.dp)
                         .aspectRatio(1f)
-                        .pointerInput(index) {
+                        .pointerInput(index, item?.id) {
                             detectTapGestures(
                                 onLongPress = {
                                     dialogState.value = Pair(true, item)
