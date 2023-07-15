@@ -29,7 +29,7 @@ interface DyImageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(cheeses: List<ImageBean>)
 
-//    @Query("SELECT count(*) FROM dy_image WHERE md5 = :md5")
-//    suspend fun selectMd5Exist(md5: String): Int
+    @Query("SELECT count(*) FROM dy_image WHERE md5 = :md5")
+    suspend fun selectMd5Exist(md5: String): Int
 
 }

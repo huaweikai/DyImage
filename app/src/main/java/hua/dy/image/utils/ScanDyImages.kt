@@ -99,6 +99,8 @@ private suspend fun DocumentFile.saveImage(
         isFile -> {
             if (length() < fileSize) return
             val md5 = this.md5
+            val count = dyImageDao.selectMd5Exist(md5)
+            if (count > 0) return
             val endType = imageType
             val fileNameWithType = "${this.generalFileName()}.${endType ?: "png"}"
             val newFile = FileProvider.getUriForFile(
@@ -120,7 +122,7 @@ private suspend fun DocumentFile.saveImage(
                 fileName = fileNameWithType,
                 secondMenu = appBean.providerSecond,
                 scanTime = System.currentTimeMillis(),
-                cachePath = appBean.cachePath.getOrNull(cacheIndex) ?:""
+                cachePath = appBean.cachePath.getOrNull(cacheIndex) ?: appBean.cachePath.first()
             )
             dyImageDao.insert(imageBean)
         }
@@ -159,7 +161,7 @@ val DocumentFile.imageType: String?
 /**
  * 以byte为单位
  */
-val fileSize by SharedPreferenceEntrust("fileSize", 0)
+val fileSize by SharedPreferenceEntrust("fileSize", 256)
 
 
 fun DocumentFile.generalFileName(): String {

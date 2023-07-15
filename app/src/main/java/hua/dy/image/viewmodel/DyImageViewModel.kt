@@ -11,9 +11,6 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
-import hua.dy.image.bean.isGif
-import hua.dy.image.bean.isJpg
-import hua.dy.image.bean.isPng
 import hua.dy.image.db.dyImageDao
 import hua.dy.image.utils.scanDyImages
 import hua.dy.image.utils.sortValue
@@ -38,51 +35,10 @@ class DyImageViewModel: ViewModel() {
         ).flow.map {
             it.filter { imageBean ->
                 if (_chatImagesStateFlow.value) {
-                    imageBean.cachePath == DyAppBean.cachePath[1]
+                    imageBean.cachePath == DyAppBean.cachePath[0]
                 } else true
             }
         }.cachedIn(viewModelScope)
-
-
-
-    val gifImage = Pager(
-        config = PagingConfig(
-            pageSize = 60,
-            enablePlaceholders = true,
-            maxSize = 200
-        ),
-        pagingSourceFactory = dyImageDao::getImageListByFileTime
-    ).flow.map { pageData ->
-        pageData.filter {
-            it.isGif
-        }
-    }.cachedIn(viewModelScope)
-
-    val pngImage = Pager(
-        config = PagingConfig(
-            pageSize = 60,
-            enablePlaceholders = true,
-            maxSize = 200
-        ),
-        pagingSourceFactory = dyImageDao::getImageListByFileTime
-    ).flow.map { pageData ->
-        pageData.filter {
-            it.isPng
-        }
-    }.cachedIn(viewModelScope)
-
-    val jpgImage = Pager(
-        config = PagingConfig(
-            pageSize = 60,
-            enablePlaceholders = true,
-            maxSize = 200
-        ),
-        pagingSourceFactory = dyImageDao::getImageListByFileTime
-    ).flow.map { pageData ->
-        pageData.filter {
-            it.isJpg
-        }
-    }.cachedIn(viewModelScope)
 
     fun refreshDyImages() {
         viewModelScope.launch(Dispatchers.IO) {
