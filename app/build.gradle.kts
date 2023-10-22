@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "hua.dy.image"
+    namespace = "hua.qq.image"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "hua.dy.image"
+        applicationId = "hua.qq.image"
         minSdk = 24
         targetSdk = 33
         versionCode = 3
