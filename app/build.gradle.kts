@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "hua.qq.image"
+    namespace = "hua.dy.image"
     compileSdk = 33
 
     defaultConfig {
