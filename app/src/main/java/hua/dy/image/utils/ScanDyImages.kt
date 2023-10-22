@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.app.AppBean
-import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.type
 import hua.dy.image.db.dyImageDao
@@ -35,7 +34,7 @@ const val scopeCount = 4
 private var scopeRunningCount = 0
 
 fun scanDyImages(
-    appBean: AppBean = DyAppBean
+    appBean: AppBean
 ) {
     if (scopeRunningCount > 0) {
         scope.launch(Dispatchers.Main) {
@@ -47,8 +46,8 @@ fun scanDyImages(
     if (!documentDir.exists() || !documentDir.isDirectory) return
     repeat(appBean.cachePath.size) { index ->
         val path = appBean.cachePath[index]
-        val targetFile = documentDir.findDocument(path) ?: return
-        if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return
+        val targetFile = documentDir.findDocument(path) ?: return@repeat
+        if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return@repeat
         targetFile.saveFile(index, appBean)
     }
 }
@@ -73,7 +72,12 @@ private fun DocumentFile.saveFile(
         scope.launch(Dispatchers.IO) {
             scopeRunningCount++
             for (i in (index * interval) until ((index + 1) * interval)) {
-                this@saveFile.listFiles()[i].saveImage(cacheIndex, appBean)
+                val file =  this@saveFile.listFiles()[i]
+                kotlin.runCatching {
+                   file.saveImage(cacheIndex, appBean)
+                }.onFailure {
+                    Log.e("TAG", "failed ${file.name} ${it.message}")
+                }
             }
         }.invokeOnCompletion {
             if (--scopeRunningCount == 0) {
@@ -87,12 +91,12 @@ private fun DocumentFile.saveFile(
 
 private suspend fun DocumentFile.saveImage(
     cacheIndex: Int,
-    appBean: AppBean = DyAppBean
+    appBean: AppBean
 ) {
     when {
         isDirectory -> {
             listFiles().forEach { document ->
-                document.saveImage(cacheIndex)
+                document.saveImage(cacheIndex, appBean)
             }
         }
 
@@ -161,7 +165,7 @@ val DocumentFile.imageType: String?
 /**
  * 以byte为单位
  */
-val fileSize by SharedPreferenceEntrust("fileSize", 256)
+val fileSize by SharedPreferenceEntrust("fileSize", 0)
 
 
 fun DocumentFile.generalFileName(): String {

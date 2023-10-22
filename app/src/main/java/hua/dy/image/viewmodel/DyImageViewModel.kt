@@ -9,7 +9,8 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import hua.dy.image.app.DyAppBean
+import hua.dy.image.app.AppBean
+import hua.dy.image.app.TencentQQBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.db.dyImageDao
 import hua.dy.image.utils.scanDyImages
@@ -35,15 +36,15 @@ class DyImageViewModel: ViewModel() {
         ).flow.map {
             it.filter { imageBean ->
                 if (_chatImagesStateFlow.value) {
-                    imageBean.cachePath == DyAppBean.cachePath[0]
+                    imageBean.cachePath == TencentQQBean.cachePath[0]
                 } else true
             }
         }.cachedIn(viewModelScope)
 
-    fun refreshDyImages() {
+    fun refreshDyImages(appBean: AppBean) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                scanDyImages()
+                scanDyImages(appBean)
             }.onFailure {
                 it.printStackTrace()
             }

@@ -35,6 +35,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import hua.dy.image.app.TencentQQBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.isGif
 import hua.dy.image.ui.Home
@@ -68,8 +69,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    val appBean = TencentQQBean
                     CompositionLocalProvider(
-                        LocalNavController provides navController
+                        LocalNavController provides navController,
+                        LocalCurrentAppBean provides appBean
                     ) {
                         NavHost(navController = navController, startDestination = "home") {
                             route()

@@ -53,8 +53,8 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
+import hua.dy.image.LocalCurrentAppBean
 import hua.dy.image.SharedDialog
-import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.isGif
 import hua.dy.image.utils.GetDyPermission
@@ -75,16 +75,18 @@ fun Home() {
         mutableStateOf(Pair(false, -1))
     }
 
+    val appBean = LocalCurrentAppBean.current
+
     val viewModel = viewModel(DyImageViewModel::class.java)
 
     val imageData = viewModel.allImages.collectAsLazyPagingItems()
 
     var permissionState by remember {
-        mutableStateOf(hasDyPermission(DyAppBean.packageName))
+        mutableStateOf(hasDyPermission(appBean.packageName))
     }
 
     if (!permissionState) {
-        GetDyPermission()
+        GetDyPermission(appBean)
     }
 
     val dialogState = remember {
@@ -125,10 +127,10 @@ fun Home() {
                         modifier = Modifier
                             .padding(end = 16.dp)
                             .clickable {
-                                val permission = hasDyPermission(DyAppBean.packageName)
+                                val permission = hasDyPermission(appBean.packageName)
                                 permissionState = permission
                                 if (permission) {
-                                    viewModel.refreshDyImages()
+                                    viewModel.refreshDyImages(appBean)
                                 }
                             }
                     )

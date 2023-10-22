@@ -11,14 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.app.AppBean
-import hua.dy.image.app.DyAppBean
 import splitties.init.appCtx
 
 const val ANDROID_SAF_PATH = "content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"
 
 @Composable
 fun GetDyPermission(
-    appBean: AppBean = DyAppBean
+    appBean: AppBean
 ) {
     var packShared by SharedPreferenceEntrust(appBean.packageName, "")
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
