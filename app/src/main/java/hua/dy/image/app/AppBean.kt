@@ -14,7 +14,7 @@ import java.io.File
 sealed class AppBean(
     val packageName: String,
     val providerSecond: String,
-    val cachePath: List<String>
+    val cachePath: List<CachePath>
 ) {
 
     val safPath: String
@@ -22,13 +22,13 @@ sealed class AppBean(
             return "$ANDROID_SAF_PATH$packageName"
         }
 
-    val saveImagePath: File by lazy {
+    fun getSaveImagePath(secondPath: String): File {
         val file = File(appCtx.externalCacheDir, APP_SHARED_PROVIDER_TOP_PATH)
-        val dyFile = File(file, providerSecond)
+        val dyFile = File(file, "$providerSecond/$secondPath")
         if (!dyFile.exists()) {
             dyFile.mkdirs()
         }
-        dyFile
+        return dyFile
     }
 
     fun isPermissionUri(uri: Uri): Boolean {
@@ -36,3 +36,8 @@ sealed class AppBean(
     }
 
 }
+
+data class CachePath(
+    val path: String,
+    val name: String
+)

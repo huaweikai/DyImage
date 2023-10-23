@@ -12,7 +12,7 @@ object DyAppBean: AppBean(
     packageName = DY_PACKAGE_NAME,
     providerSecond = DY_IMAGE_SECOND_MENU,
     cachePath = listOf(
-        "/cache/picture/im_fresco_cache/*",
-        DY_CACHE_PATH
+        CachePath("/cache/picture/im_fresco_cache/*", "chat"),
+        CachePath(DY_CACHE_PATH, "all")
     )
 )

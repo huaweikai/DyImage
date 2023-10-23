@@ -152,7 +152,6 @@ fun Home() {
                     .padding(bottom = 16.dp)
             ) {
                 // 不加这个重建页面后，这个Column不显示了，暂时不知道为啥
-                Text(text = "    ")
                 AnimatedVisibility(visible = lazyScrollState.canScrollBackward) {
                     Icon(
                         imageVector = Icons.Outlined.KeyboardArrowUp,

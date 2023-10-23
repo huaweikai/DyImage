@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.app.AppBean
+import hua.dy.image.app.CachePath
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.type
 import hua.dy.image.db.dyImageDao
@@ -45,10 +46,10 @@ fun scanDyImages(
     val documentDir = DocumentFile.fromTreeUri(appCtx, Uri.parse(shared)) ?: return
     if (!documentDir.exists() || !documentDir.isDirectory) return
     repeat(appBean.cachePath.size) { index ->
-        val path = appBean.cachePath[index]
-        val targetFile = documentDir.findDocument(path) ?: return@repeat
+        val pathBean = appBean.cachePath[index]
+        val targetFile = documentDir.findDocument(pathBean.path) ?: return@repeat
         if (targetFile.isDirectory && targetFile.listFiles().isEmpty()) return@repeat
-        targetFile.saveFile(index, appBean)
+        targetFile.saveFile(pathBean, index, appBean)
     }
 }
 
@@ -64,6 +65,7 @@ private fun DocumentFile.getRealScopeCount(): Pair<Int, Int> {
     }
 
 private fun DocumentFile.saveFile(
+    pathBean: CachePath,
     cacheIndex: Int,
     appBean: AppBean
 ) {
@@ -74,7 +76,7 @@ private fun DocumentFile.saveFile(
             for (i in (index * interval) until ((index + 1) * interval)) {
                 val file =  this@saveFile.listFiles()[i]
                 kotlin.runCatching {
-                   file.saveImage(cacheIndex, appBean)
+                   file.saveImage(pathBean, cacheIndex, appBean)
                 }.onFailure {
                     Log.e("TAG", "failed ${file.name} ${it.message}")
                 }
@@ -90,13 +92,14 @@ private fun DocumentFile.saveFile(
 }
 
 private suspend fun DocumentFile.saveImage(
+    pathBean: CachePath,
     cacheIndex: Int,
     appBean: AppBean
 ) {
     when {
         isDirectory -> {
             listFiles().forEach { document ->
-                document.saveImage(cacheIndex, appBean)
+                document.saveImage(pathBean, cacheIndex, appBean)
             }
         }
 
@@ -110,7 +113,7 @@ private suspend fun DocumentFile.saveImage(
             val newFile = FileProvider.getUriForFile(
                 appCtx,
                 SHARED_PROVIDER,
-                File(appBean.saveImagePath, fileNameWithType)
+                File(appBean.getSaveImagePath(pathBean.name), fileNameWithType)
             )
             appCtx.contentResolver.openOutputStream(newFile)?.use { fos ->
                 appCtx.contentResolver.openInputStream(uri)?.use { ins ->
@@ -126,7 +129,7 @@ private suspend fun DocumentFile.saveImage(
                 fileName = fileNameWithType,
                 secondMenu = appBean.providerSecond,
                 scanTime = System.currentTimeMillis(),
-                cachePath = appBean.cachePath.getOrNull(cacheIndex) ?: appBean.cachePath.first()
+                cachePath = pathBean.path
             )
             dyImageDao.insert(imageBean)
         }
