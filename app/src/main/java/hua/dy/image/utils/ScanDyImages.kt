@@ -127,7 +127,7 @@ private suspend fun DocumentFile.saveImage(
                 fileTime = this.lastModified(),
                 fileType = endType.type,
                 fileName = fileNameWithType,
-                secondMenu = appBean.providerSecond,
+                secondMenu = "${appBean.providerSecond}/${pathBean.name}",
                 scanTime = System.currentTimeMillis(),
                 cachePath = pathBean.path
             )
