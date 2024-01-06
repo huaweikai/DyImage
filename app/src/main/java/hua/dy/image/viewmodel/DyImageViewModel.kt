@@ -36,7 +36,7 @@ class DyImageViewModel: ViewModel() {
         ).flow.map {
             it.filter { imageBean ->
                 if (_chatImagesStateFlow.value) {
-                    imageBean.cachePath == TencentQQBean.cachePath[0]
+                    imageBean.cachePath == TencentQQBean.cachePath.first().path
                 } else true
             }
         }.cachedIn(viewModelScope)
@@ -65,7 +65,7 @@ class DyImageViewModel: ViewModel() {
     fun changeChatImageState(value: Boolean) {
         _chatImagesStateFlow.value = value
         val text = if (value) {
-            "你选择了聊天页面的图片"
+            "你选择了高清的图片"
         } else {
             "你选择了所有图片"
         }
