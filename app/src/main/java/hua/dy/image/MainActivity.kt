@@ -3,7 +3,6 @@ package hua.dy.image
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -103,7 +102,7 @@ fun SharedDialog(
             .width(screenWidth * 0.8f),
         onDismissRequest = {
             dialogState.value = Pair(false, null)
-            Toast.makeText(appCtx, "取消分享", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(appCtx, "取消分享", Toast.LENGTH_SHORT).show()
         },
         confirmButton = {
             Text(
