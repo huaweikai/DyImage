@@ -2,24 +2,22 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    id("kotlin-kapt")
+    alias(libs.plugins.kotlinKsp)
 }
 
 android {
     namespace = "hua.dy.image"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "hua.dy.image"
         minSdk = 24
-        targetSdk = 33
-        versionCode = 3
-        versionName = "0.2"
+        targetSdk = 34
+        versionCode = 4
+        versionName = "0.3"
 
-        kapt {
-            arguments {
-                arg("room.schemaLocation", "$projectDir/schemas")
-            }
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,7 +47,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -81,7 +79,7 @@ dependencies {
     implementation(libs.coil.gif)
 
     // room
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     implementation(libs.room.paging)

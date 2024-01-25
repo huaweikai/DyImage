@@ -10,7 +10,11 @@ import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import hua.dy.image.app.DyAppBean
+import hua.dy.image.bean.GIF
 import hua.dy.image.bean.ImageBean
+import hua.dy.image.bean.JPG
+import hua.dy.image.bean.Other
+import hua.dy.image.bean.PNG
 import hua.dy.image.db.dyImageDao
 import hua.dy.image.utils.scanDyImages
 import hua.dy.image.utils.sortValue
@@ -23,6 +27,8 @@ import kotlinx.coroutines.launch
 import splitties.init.appCtx
 
 class DyImageViewModel: ViewModel() {
+
+
 
     val allImages: Flow<PagingData<ImageBean>> =
         Pager(
@@ -50,12 +56,48 @@ class DyImageViewModel: ViewModel() {
         }
     }
 
+    private var type = -1
+
+    fun changeType() {
+        type = when (type) {
+            -1 -> PNG
+            PNG, JPG -> type + 1
+            GIF -> Other
+            else -> -1
+        }
+        viewModelScope.launch {
+            _typeState.emit(getTypeString())
+        }
+    }
+
+    private fun getTypeString(): String {
+        return when (type) {
+            PNG -> "PNG"
+            JPG -> "JPG"
+            GIF -> "GIF"
+            Other -> "Other"
+            else -> "All"
+        }
+    }
+
+    private val _typeState = MutableStateFlow(getTypeString())
+    val typeState = _typeState.asStateFlow()
+
     private fun getImagePagingSource(): PagingSource<Int, ImageBean> {
-       return when (sortValue) {
-            1 -> dyImageDao::getImageListByScanTime
-            2 -> dyImageDao::getImageListByFileLength
-            else -> dyImageDao::getImageListByFileTime
-        }.invoke()
+        return if (type == -1) {
+            when (sortValue) {
+                1 -> dyImageDao.getImageListByScanTime()
+                2 -> dyImageDao.getImageListByFileLength()
+                else -> dyImageDao.getImageListByFileTime()
+            }
+        } else {
+            when (sortValue) {
+                1 -> dyImageDao.getImageListByScanTime(type)
+                2 -> dyImageDao.getImageListByFileLength(type)
+                else -> dyImageDao.getImageListByFileTime(type)
+            }
+        }
+
     }
 
     private val _chatImagesStateFlow = MutableStateFlow(false)

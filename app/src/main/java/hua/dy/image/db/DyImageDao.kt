@@ -23,6 +23,15 @@ interface DyImageDao {
     @Query("SELECT * FROM dy_image ORDER BY scan_time COLLATE NOCASE DESC")
     fun getImageListByScanTime(): PagingSource<Int, ImageBean>
 
+    @Query("SELECT * FROM dy_image where file_type =:type ORDER BY file_time COLLATE NOCASE DESC")
+    fun getImageListByFileTime(type: Int): PagingSource<Int, ImageBean>
+
+    @Query("SELECT * FROM dy_image where file_type =:type ORDER BY file_length COLLATE NOCASE DESC")
+    fun getImageListByFileLength(type: Int): PagingSource<Int, ImageBean>
+
+    @Query("SELECT * FROM dy_image where file_type =:type ORDER BY scan_time COLLATE NOCASE DESC")
+    fun getImageListByScanTime(type: Int): PagingSource<Int, ImageBean>
+
     @Delete
     suspend fun deleteImage(imageBean: ImageBean)
 

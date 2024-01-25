@@ -1,22 +1,23 @@
 [versions]
-agp = "8.2.0-alpha12"
-kotlin = "1.8.10"
-core-ktx = "1.10.1"
+agp = "8.2.2"
+kotlin = "1.9.21"
+core-ktx = "1.12.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
-lifecycle-runtime-ktx = "2.6.1"
-activity-compose = "1.7.2"
-compose-bom = "2023.03.00"
+lifecycle-runtime-ktx = "2.7.0"
+activity-compose = "1.8.2"
+compose-bom = "2024.01.00"
 document-util = "1.0.1"
 splitties-appctx = "3.0.0"
-room-ktx = "2.5.2"
+room-ktx = "2.6.1"
 coil = "2.4.0"
-nav-version = "2.6.0"
-paging-version = "3.2.0-rc01"
-shared-preference = "1.1.1"
-fast-md5 = "2.7.1"
+nav-version = "2.7.6"
+paging-version = "3.2.1"
+shared-preference = "1.2.1"
+#fast-md5 = "2.7.1"
 accompanist = "0.31.5-beta"
+ksp = "1.9.21-1.0.15"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -45,12 +46,13 @@ coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }
 shared-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "shared-preference" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "nav-version" }
-fast-md5 = { group = "com.joyent.util", name = "fast-md5", version.ref = "fast-md5"}
+#fast-md5 = { group = "com.joyent.util", name = "fast-md5", version.ref = "fast-md5"}
 system-ui-controll = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinKsp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [bundles]
 
