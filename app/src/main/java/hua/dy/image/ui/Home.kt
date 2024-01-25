@@ -1,6 +1,7 @@
 package hua.dy.image.ui
 
 import android.os.Build.VERSION.SDK_INT
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -31,6 +33,7 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -74,6 +78,8 @@ fun Home() {
     val sortImageState = remember {
         mutableStateOf(Pair(false, -1))
     }
+
+    val context = LocalContext.current
 
     val appBean = LocalCurrentAppBean.current
 
@@ -107,6 +113,13 @@ fun Home() {
     }
 
     val lazyScrollState = rememberLazyGridState()
+
+    val typeStringState = viewModel.typeState.collectAsState()
+
+    LaunchedEffect(key1 = typeStringState.value) {
+        Toast.makeText(context, "现在检索的是 ${typeStringState.value} 类型", Toast.LENGTH_SHORT)
+            .show()
+    }
 
     val scope = rememberCoroutineScope()
 
@@ -151,7 +164,19 @@ fun Home() {
                 modifier = Modifier
                     .padding(bottom = 16.dp)
             ) {
-                // 不加这个重建页面后，这个Column不显示了，暂时不知道为啥
+                TextButton(
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.background,
+                            RoundedCornerShape(16.dp)
+                        ),
+                    onClick = {
+                        viewModel.changeType()
+                        imageData.refresh()
+                    }
+                ) {
+                    Text(text = typeStringState.value, color = MaterialTheme.colorScheme.surfaceTint)
+                }
                 AnimatedVisibility(visible = lazyScrollState.canScrollBackward) {
                     Icon(
                         imageVector = Icons.Outlined.KeyboardArrowUp,
