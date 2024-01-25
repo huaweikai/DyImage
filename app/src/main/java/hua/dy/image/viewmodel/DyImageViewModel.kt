@@ -11,7 +11,6 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import hua.dy.image.app.AppBean
 import hua.dy.image.app.TencentQQBean
-import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.GIF
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.JPG

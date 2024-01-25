@@ -131,7 +131,7 @@ fun Home() {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "抖音表情包 总数: $animationNumber")
+                    Text(text = "QQ本地图片 总数: $animationNumber")
                 },
                 actions = {
                     Icon(
