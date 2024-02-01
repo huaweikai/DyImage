@@ -16,6 +16,7 @@ import hua.dy.image.bean.JPG
 import hua.dy.image.bean.Other
 import hua.dy.image.bean.PNG
 import hua.dy.image.db.dyImageDao
+import hua.dy.image.utils.APP_SHARED_PROVIDER_TOP_PATH
 import hua.dy.image.utils.scanDyImages
 import hua.dy.image.utils.sortValue
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
+import java.io.File
 
 class DyImageViewModel: ViewModel() {
 
@@ -111,6 +113,21 @@ class DyImageViewModel: ViewModel() {
             "你选择了所有图片"
         }
         Toast.makeText(appCtx, text, Toast.LENGTH_SHORT).show()
+    }
+
+
+    init {
+        viewModelScope.launch {
+            val parentDirectory = File(appCtx.externalCacheDir, APP_SHARED_PROVIDER_TOP_PATH)
+            val directory = File(parentDirectory, DyAppBean.providerSecond)
+            if (!directory.exists()) return@launch
+            val size = directory.listFiles()?.size ?: 0
+            val roomSize = dyImageDao.getImageCount()
+            if (size == 0 && roomSize != 0) {
+                Toast.makeText(appCtx, "图片文件被其他文件清理软件清楚, 正在清楚数据库", Toast.LENGTH_SHORT).show()
+                dyImageDao.deleteAll()
+            }
+        }
     }
 
 }

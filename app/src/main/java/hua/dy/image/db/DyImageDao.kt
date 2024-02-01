@@ -41,4 +41,10 @@ interface DyImageDao {
     @Query("SELECT count(*) FROM dy_image WHERE md5 = :md5")
     suspend fun selectMd5Exist(md5: String): Int
 
+    @Query("SELECT count(*) FROM dy_image")
+    suspend fun getImageCount(): Int
+
+    @Query("delete from dy_image")
+    suspend fun deleteAll(): Int
+
 }
