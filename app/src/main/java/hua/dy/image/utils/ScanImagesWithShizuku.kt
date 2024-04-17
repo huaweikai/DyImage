@@ -2,14 +2,10 @@ package hua.dy.image.utils
 
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import hua.dy.image.app.AppBean
 import hua.dy.image.app.DY_FILE_PATH
 import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.FileBean
-import hua.dy.image.bean.ImageBean
-import hua.dy.image.bean.type
-import hua.dy.image.db.dyImageDao
 import hua.dy.image.service.FileExplorerService
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -17,10 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
-import java.io.BufferedInputStream
-import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
 
 private val handlerException = CoroutineExceptionHandler { _, throwable ->
     Log.e("TAG", "异常 $throwable")
@@ -94,76 +86,18 @@ private suspend fun FileBean.saveImage(
             }
         }
 
-        isFile == true -> {
-            if ((length ?: 0L) < fileSize) return
-            val md5 = this.md5
-            val count = dyImageDao.selectMd5Exist(md5)
-            if (count > 0) return
-            val endType = imageType
-            val fileNameWithType = "${this.generalFileName()}.${endType ?: "png"}"
-            val newFile = FileProvider.getUriForFile(
-                appCtx,
-                SHARED_PROVIDER,
-                File(appBean.saveImagePath, fileNameWithType)
+        isFile -> {
+            val imageBean = FileExplorerService.service?.copyToMyFile(
+                this,
+                fileSize.toLong(),
+                cacheIndex,
+                appBean.providerSecond,
+                appBean.saveImagePath.path,
+                appBean.cachePath
             )
-            appCtx.contentResolver.openOutputStream(newFile)?.use { fos ->
-                openInputStream()?.use { ins ->
-                    ins.copyTo(fos)
-                }
-            }
-            val imageBean = ImageBean(
-                md5 = md5,
-                imagePath = newFile.toString(),
-                fileLength = this.length ?: 0L,
-                fileTime = this.lastModified ?: 0L,
-                fileType = endType.type,
-                fileName = fileNameWithType,
-                secondMenu = appBean.providerSecond,
-                scanTime = System.currentTimeMillis(),
-                cachePath = appBean.cachePath.getOrNull(cacheIndex) ?: appBean.cachePath.first()
-            )
-            dyImageDao.insert(imageBean)
+            Log.e("TAG", "imageBean = $imageBean")
+            if (imageBean == null) return
+//            dyImageDao.insert(imageBean)
         }
     }
-}
-
-private val FileBean.md5: String
-    get() {
-        val md5 = MessageDigest.getInstance("MD5")
-        BufferedInputStream(openInputStream(), 1024).use {
-            md5.update(it.readBytes())
-        }
-        return BigInteger(1, md5.digest()).toString(16).padStart(32, '0')
-    }
-
-val FileBean.imageType: String?
-    get() {
-        val ins = openInputStream() ?: return null
-        val byteArray = ByteArray(10)
-        ins.read(byteArray)
-        if (byteArray[0] == 'G'.code.toByte() && byteArray[1] == 'I'.code.toByte() && byteArray[2] == 'F'.code.toByte()) {
-            return "gif"
-        }
-        if (byteArray[1] == 'P'.code.toByte() && byteArray[2] == 'N'.code.toByte() && byteArray[3] == 'G'.code.toByte()) {
-            return "png"
-        }
-        if (byteArray[6] == 'J'.code.toByte() && byteArray[7] == 'F'.code.toByte() && byteArray[8] == 'I'.code.toByte() && byteArray[9] == 'F'.code.toByte()) {
-            return "jpg"
-        }
-        Log.e("FileType", byteArray.map { it.toInt().toChar() }.joinToString("."))
-        ins.close()
-        return null
-    }
-
-
-
-fun FileBean.generalFileName(): String {
-//    val subNameResult = runCatching {
-//        this.name?.substring(0,5)
-//    }
-//    val subName = if (subNameResult.isFailure) {
-//        this.name
-//    } else subNameResult.getOrThrow()
-//    return "${subName}_${simpleDateFormat.format(lastModified())}"
-    return "${name?.replace(".cnt", "")}"
 }

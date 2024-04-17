@@ -1,9 +1,10 @@
 package hua.dy.image.bean
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.parcelize.Parcelize
 
 const val PNG = 0
 
@@ -26,6 +27,7 @@ val ImageBean.isPng get() = fileType == PNG
 
 val ImageBean.isJpg get() = fileType == JPG
 
+
 @Entity("dy_image")
 data class ImageBean(
     @PrimaryKey
@@ -46,4 +48,44 @@ data class ImageBean(
     val scanTime: Long = 0,
     @ColumnInfo(name = "cache_path", defaultValue = "")
     val cachePath: String = ""
-)
+): Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?:"",
+        parcel.readString() ?:"",
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?:"",
+        parcel.readLong(),
+        parcel.readString()?:""
+    )
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeString(md5)
+        dest.writeString(imagePath)
+        dest.writeLong(fileLength)
+        dest.writeLong(fileTime)
+        dest.writeInt(fileType)
+        dest.writeString(fileName)
+        dest.writeString(secondMenu)
+        dest.writeLong(scanTime)
+        dest.writeString(cachePath)
+    }
+
+    companion object CREATOR : Parcelable.Creator<ImageBean> {
+        override fun createFromParcel(parcel: Parcel): ImageBean {
+            return ImageBean(parcel)
+        }
+
+        override fun newArray(size: Int): Array<ImageBean?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+
+}

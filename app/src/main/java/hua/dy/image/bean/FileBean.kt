@@ -4,6 +4,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import hua.dy.image.service.FileExplorerService
 import kotlinx.parcelize.Parcelize
+import rikka.shizuku.Shizuku
+import rikka.shizuku.ShizukuProvider
 import java.io.File
 
 data class FileBean(
@@ -29,10 +31,8 @@ data class FileBean(
 
     fun findFile(path: String?): FileBean? {
         val service = FileExplorerService.service ?: return null
-        return service.getFileBean(path)
+        return service.getFileBean(this.path + "/$path")
     }
-
-    fun openInputStream() = path?.let { File(it).inputStream() }
 
 
     override fun describeContents(): Int {
