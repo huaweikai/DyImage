@@ -1,5 +1,7 @@
 package hua.dy.image.app
 
+import android.annotation.SuppressLint
+
 /**
  * 抖音包名
  */
@@ -8,7 +10,10 @@ const val DY_IMAGE_SECOND_MENU = "dy_image"
 
 const val DY_CACHE_PATH = "/cache/picture/fresco_cache/*"
 
-object DyAppBean: AppBean(
+@SuppressLint("SdCardPath")
+const val DY_FILE_PATH = "/sdcard/Android/data/com.ss.android.ugc.aweme/"
+
+data object DyAppBean: AppBean(
     packageName = DY_PACKAGE_NAME,
     providerSecond = DY_IMAGE_SECOND_MENU,
     cachePath = listOf(

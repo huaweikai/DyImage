@@ -18,6 +18,7 @@ shared-preference = "1.2.1"
 #fast-md5 = "2.7.1"
 accompanist = "0.31.5-beta"
 ksp = "1.9.21-1.0.15"
+shizuku = "13.1.5"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -48,6 +49,8 @@ shared-preference = { group = "androidx.preference", name = "preference-ktx", ve
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "nav-version" }
 #fast-md5 = { group = "com.joyent.util", name = "fast-md5", version.ref = "fast-md5"}
 system-ui-controll = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
+shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
+shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

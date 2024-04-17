@@ -9,9 +9,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.app.AppBean
 import hua.dy.image.app.DyAppBean
+import hua.dy.image.bean.FileBean
 import splitties.init.appCtx
 
 const val ANDROID_SAF_PATH = "content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"
@@ -44,6 +46,7 @@ fun GetDyPermission(
 }
 
 fun hasDyPermission(packageName: String): Boolean {
+    if (ShizukuUtils.isShizukuPermission) return true
     val permissionUris = appCtx.contentResolver.persistedUriPermissions.map {
         it.uri.toString().split("data%2F", ignoreCase = true).last()
     }
@@ -66,6 +69,29 @@ fun DocumentFile.findDocument(
 ): DocumentFile? {
     val pathList = cachePath.split("/").filter { it.isNotBlank() }
     var document: DocumentFile? = this
+    pathList.forEach {
+        if (document == null) return null
+        val ma = pattern.matcher(it)
+        if (ma.find()) {
+            val index = ma.group().length - 1
+            document = document?.listFiles()?.getOrNull(index)
+        } else {
+            document?.findFile(it)?.let { file ->
+                document = file
+            } ?: return null
+        }
+    }
+    return document
+}
+
+/**
+ * 如果文件路径有全星的，有几个星就拿第几个
+ */
+fun FileBean.findDocument(
+    cachePath: String
+): FileBean? {
+    val pathList = cachePath.split("/").filter { it.isNotBlank() }
+    var document: FileBean? = this
     pathList.forEach {
         if (document == null) return null
         val ma = pattern.matcher(it)

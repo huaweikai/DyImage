@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kotlinKsp)
 }
+apply(plugin = "org.jetbrains.kotlin.plugin.parcelize")
 
 android {
     namespace = "hua.dy.image"
@@ -45,6 +46,8 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+        aidl = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.7"
@@ -90,5 +93,8 @@ dependencies {
 
     implementation(libs.shared.preference)
     implementation(libs.system.ui.controll)
+
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 
 }
