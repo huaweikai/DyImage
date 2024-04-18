@@ -6,6 +6,7 @@ import hua.dy.image.app.AppBean
 import hua.dy.image.app.DY_FILE_PATH
 import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.FileBean
+import hua.dy.image.db.dyImageDao
 import hua.dy.image.service.FileExplorerService
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -94,10 +95,8 @@ private suspend fun FileBean.saveImage(
                 appBean.providerSecond,
                 appBean.saveImagePath.path,
                 appBean.cachePath
-            )
-            Log.e("TAG", "imageBean = $imageBean")
-            if (imageBean == null) return
-//            dyImageDao.insert(imageBean)
+            ) ?: return
+            dyImageDao.insert(imageBean)
         }
     }
 }

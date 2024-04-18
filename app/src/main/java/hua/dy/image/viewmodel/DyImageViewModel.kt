@@ -19,7 +19,6 @@ import hua.dy.image.bean.PNG
 import hua.dy.image.db.dyImageDao
 import hua.dy.image.service.FileExplorerService
 import hua.dy.image.utils.APP_SHARED_PROVIDER_TOP_PATH
-import hua.dy.image.utils.FileExplorerServiceManager
 import hua.dy.image.utils.ShizukuUtils
 import hua.dy.image.utils.scanDyImages
 import hua.dy.image.utils.scanDyImagesWithShizuku
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import rikka.shizuku.Shizuku
 import splitties.init.appCtx
 import java.io.File
 
@@ -141,7 +139,6 @@ class DyImageViewModel: ViewModel() {
             Log.e("TAG", "shizuku")
                 Log.e("TAG", "start Scan ${FileExplorerService.service}")
                 scanDyImagesWithShizuku()
-
         } else {
             Log.e("TAG", "saf")
             scanDyImages()

@@ -13,6 +13,6 @@ interface IFileExplorerService {
 
     FileBean getFileBean(String path);
 
-    FileBean copyToMyFile(in FileBean bean,long fileSize,int cacheIndex,String providerSecond, String saveImagePath, in List<String> cachePath);
+    ImageBean copyToMyFile(in FileBean bean,long fileSize,int cacheIndex,String providerSecond, String saveImagePath, in List<String> cachePath);
 
 }

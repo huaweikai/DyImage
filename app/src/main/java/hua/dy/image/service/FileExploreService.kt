@@ -5,12 +5,10 @@ import android.util.Log
 import hua.dy.image.bean.FileBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.type
-import rikka.shizuku.Shizuku
 import java.io.BufferedInputStream
 import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
-import kotlin.concurrent.thread
 
 class FileExplorerService : IFileExplorerService.Stub() {
     @Throws(RemoteException::class)
@@ -23,7 +21,7 @@ class FileExplorerService : IFileExplorerService.Stub() {
 
     override fun getFileBean(path: String?): FileBean {
         if (path == null) throw NullPointerException("Path is Empty")
-       return File(path).toFileBean()
+        return File(path).toFileBean()
     }
 
     override fun copyToMyFile(
@@ -33,34 +31,29 @@ class FileExplorerService : IFileExplorerService.Stub() {
         providerSecond: String?,
         saveImagePath: String?,
         cachePath: List<String>?
-    ): FileBean {
-        return FileBean(null, null, null, null, null)
+    ): ImageBean {
         if (bean == null) throw NullPointerException("Bean is Empty")
         if ((bean.length ?: 0L) < fileSize) throw Exception("File is so big")
         val md5 = bean.md5
         val endType = bean.imageType
         val fileNameWithType = "${bean.generalFileName()}.${endType ?: "png"}"
         val generalFilePath = File(saveImagePath, fileNameWithType)
-        thread {
-            generalFilePath.outputStream().use { fos ->
-                File(bean.path!!).inputStream().use { ins ->
-                    ins.copyTo(fos)
-                }
+        generalFilePath.outputStream().use { fos ->
+            File(bean.path!!).inputStream().use { ins ->
+                ins.copyTo(fos)
             }
         }
-        Shizuku.
-        return FileBean(null, null, null, null, null)
-//        return ImageBean(
-//            md5 = md5,
-//            imagePath = generalFilePath.toString(),
-//            fileLength = bean.length ?: 0L,
-//            fileTime = bean.lastModified ?: 0L,
-//            fileType = endType.type,
-//            fileName = fileNameWithType,
-//            secondMenu = providerSecond ?: "",
-//            scanTime = System.currentTimeMillis(),
-//            cachePath = cachePath?.getOrNull(cacheIndex) ?: cachePath?.first() ?: ""
-//        )
+        return ImageBean(
+            md5 = md5,
+            imagePath = generalFilePath.toString(),
+            fileLength = bean.length ?: 0L,
+            fileTime = bean.lastModified ?: 0L,
+            fileType = endType.type,
+            fileName = fileNameWithType,
+            secondMenu = providerSecond ?: "",
+            scanTime = System.currentTimeMillis(),
+            cachePath = cachePath?.getOrNull(cacheIndex) ?: cachePath?.first() ?: ""
+        )
     }
 
     private fun File.toFileBean(): FileBean {
@@ -84,7 +77,7 @@ class FileExplorerService : IFileExplorerService.Stub() {
 
     val FileBean.imageType: String?
         get() {
-            val ins = File(path!!).inputStream() ?: return null
+            val ins = File(path!!).inputStream()
             val byteArray = ByteArray(10)
             ins.read(byteArray)
             if (byteArray[0] == 'G'.code.toByte() && byteArray[1] == 'I'.code.toByte() && byteArray[2] == 'F'.code.toByte()) {
@@ -96,7 +89,7 @@ class FileExplorerService : IFileExplorerService.Stub() {
             if (byteArray[6] == 'J'.code.toByte() && byteArray[7] == 'F'.code.toByte() && byteArray[8] == 'I'.code.toByte() && byteArray[9] == 'F'.code.toByte()) {
                 return "jpg"
             }
-            Log.e("FileType", byteArray.map { it.toInt().toChar() }.joinToString("."))
+            Log.e("FileType2", byteArray.map { it.toInt().toChar() }.joinToString("."))
             ins.close()
             return null
         }
