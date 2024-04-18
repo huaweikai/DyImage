@@ -3,24 +3,64 @@
 package hua.dy.image.utils
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.app.AppBean
 import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.FileBean
+import rikka.shizuku.Shizuku
 import splitties.init.appCtx
 
 const val ANDROID_SAF_PATH = "content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"
 
 @Composable
 fun GetDyPermission(
-    appBean: AppBean = DyAppBean
+    needShizuku: Boolean,
+    appBean: AppBean = DyAppBean,
+    callBack: (isGanted: Boolean, isShizuku: Boolean) -> Unit
+) {
+    if (ShizukuUtils.isShizukuAvailable && needShizuku) {
+        GetShizukuPermission(callBack)
+    } else {
+        GetSafPermission(appBean)
+    }
+}
+
+@Composable
+private fun GetShizukuPermission(
+    callBack: (isGanted: Boolean, isShizuku: Boolean) -> Unit
+) {
+    val listener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode != 0) return@OnRequestPermissionResultListener
+        if (grantResult == PackageManager.PERMISSION_GRANTED) {
+            callBack.invoke(true, true)
+            Toast.makeText(appCtx, "权限获取成功", Toast.LENGTH_SHORT).show()
+        } else {
+            callBack.invoke(false, true)
+            Toast.makeText(appCtx, "权限获取失败", Toast.LENGTH_SHORT).show()
+        }
+    }
+    DisposableEffect(Unit) {
+        Shizuku.addRequestPermissionResultListener(listener)
+        onDispose {
+            Shizuku.removeRequestPermissionResultListener(listener)
+        }
+    }
+    LaunchedEffect(Unit) {
+        Shizuku.requestPermission(0)
+    }
+}
+
+@Composable
+private fun GetSafPermission(
+    appBean: AppBean
 ) {
     var packShared by SharedPreferenceEntrust(appBean.packageName, "")
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -46,7 +86,6 @@ fun GetDyPermission(
 }
 
 fun hasDyPermission(packageName: String): Boolean {
-    if (ShizukuUtils.isShizukuPermission) return true
     val permissionUris = appCtx.contentResolver.persistedUriPermissions.map {
         it.uri.toString().split("data%2F", ignoreCase = true).last()
     }

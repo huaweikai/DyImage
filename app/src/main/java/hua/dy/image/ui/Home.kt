@@ -58,13 +58,11 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
 import hua.dy.image.SharedDialog
-import hua.dy.image.app.DyAppBean
 import hua.dy.image.bean.ImageBean
 import hua.dy.image.bean.isGif
 import hua.dy.image.utils.GetDyPermission
 import hua.dy.image.utils.SortBottomDialog
 import hua.dy.image.utils.dp2Px
-import hua.dy.image.utils.hasDyPermission
 import hua.dy.image.utils.screenHeightPx
 import hua.dy.image.utils.sortValue
 import hua.dy.image.viewmodel.DyImageViewModel
@@ -86,11 +84,7 @@ fun Home() {
     val imageData = viewModel.allImages.collectAsLazyPagingItems()
 
     var permissionState by remember {
-        mutableStateOf(hasDyPermission(DyAppBean.packageName))
-    }
-
-    if (!permissionState) {
-        GetDyPermission()
+        mutableStateOf(viewModel.hasPermission)
     }
 
     val dialogState = remember {
@@ -138,7 +132,7 @@ fun Home() {
                         modifier = Modifier
                             .padding(end = 16.dp)
                             .clickable {
-                                val permission = hasDyPermission(DyAppBean.packageName)
+                                val permission = viewModel.hasPermission
                                 permissionState = permission
                                 if (permission) {
                                     viewModel.refreshDyImages()
@@ -310,6 +304,19 @@ fun Home() {
                 imageData.refresh()
             }
         )
+    }
+
+    if (!permissionState) {
+        GetDyPermission(viewModel.needShizuku) { isGanted, isShizuku ->
+            if (isShizuku) {
+                if (isGanted) {
+                    viewModel.bindService()
+                } else {
+                    viewModel.needShizuku = false
+                    permissionState = false
+                }
+            }
+        }
     }
 
 }

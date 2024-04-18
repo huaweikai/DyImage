@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class hua.dy.image.service.IFileExplorerService { *; }
+-keep class hua.dy.image.service.FileExplorerService
+-keep class hua.dy.image.bean.FileBean { *; }
+-keep class hua.dy.image.bean.ImageBean { *; }

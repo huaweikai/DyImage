@@ -5,17 +5,12 @@ import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
-import androidx.documentfile.provider.DocumentFile
 import hua.dy.image.BuildConfig
-import hua.dy.image.DyImgApplication
-import hua.dy.image.app.DY_FILE_PATH
-import hua.dy.image.app.DyAppBean
 import hua.dy.image.service.FileExplorerService
 import hua.dy.image.service.IFileExplorerService
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.UserServiceArgs
 import splitties.init.appCtx
-import java.io.File
 
 
 object FileExplorerServiceManager {
@@ -30,11 +25,6 @@ object FileExplorerServiceManager {
             Log.d(TAG, "onServiceConnected: ")
             isBind = true
             FileExplorerService.service = IFileExplorerService.Stub.asInterface(service)
-            runCatching {
-                FileExplorerService.service?.listFiles(DY_FILE_PATH)?.forEach {
-                    Log.e("TAG", "name ${it}")
-                }
-            }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -47,6 +37,7 @@ object FileExplorerServiceManager {
     fun bindService() {
         Log.d(TAG, "bindService: isBind = " + isBind)
         if (!isBind) {
+            Log.e("TAG", "startBindService")
             Shizuku.bindUserService(USER_SERVICE_ARGS, SERVICE_CONNECTION)
         }
     }

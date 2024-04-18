@@ -19,7 +19,9 @@ import hua.dy.image.bean.PNG
 import hua.dy.image.db.dyImageDao
 import hua.dy.image.service.FileExplorerService
 import hua.dy.image.utils.APP_SHARED_PROVIDER_TOP_PATH
+import hua.dy.image.utils.FileExplorerServiceManager
 import hua.dy.image.utils.ShizukuUtils
+import hua.dy.image.utils.hasDyPermission
 import hua.dy.image.utils.scanDyImages
 import hua.dy.image.utils.scanDyImagesWithShizuku
 import hua.dy.image.utils.sortValue
@@ -144,5 +146,20 @@ class DyImageViewModel: ViewModel() {
             scanDyImages()
         }
     }
+
+    fun bindService() {
+        FileExplorerServiceManager.bindService()
+    }
+
+    val hasPermission: Boolean
+        get() {
+            return if (ShizukuUtils.isShizukuAvailable) {
+                ShizukuUtils.isShizukuPermission
+            } else {
+                hasDyPermission(DyAppBean.packageName)
+            }
+        }
+
+    var needShizuku: Boolean = true
 
 }
