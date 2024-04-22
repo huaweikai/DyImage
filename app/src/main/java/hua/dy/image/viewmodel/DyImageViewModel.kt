@@ -126,10 +126,10 @@ class DyImageViewModel: ViewModel() {
         viewModelScope.launch {
             val parentDirectory = File(appCtx.externalCacheDir, APP_SHARED_PROVIDER_TOP_PATH)
             val directory = File(parentDirectory, DyAppBean.providerSecond)
-            if (!directory.exists()) return@launch
-            val size = directory.listFiles()?.size ?: 0
             val roomSize = dyImageDao.getImageCount()
-            if (size == 0 && roomSize != 0) {
+            val fileSize = runCatching { directory.listFiles()?.size ?: 0 }.getOrNull() ?: 0
+            if (roomSize == 0) return@launch
+            if (!directory.exists() || fileSize == 0) {
                 Toast.makeText(appCtx, "图片文件被其他文件清理软件清楚, 正在清楚数据库", Toast.LENGTH_SHORT).show()
                 dyImageDao.deleteAll()
             }
